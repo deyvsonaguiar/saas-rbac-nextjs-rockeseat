@@ -4,14 +4,26 @@ import {
   createMongoAbility,
   type MongoAbility,
 } from '@casl/ability'
+import { z } from 'zod'
 
 import type { User } from './models/user'
 import { permissions } from './permissions'
-import type { ProjectSubject } from './subjects/project'
-import type { UserSubject } from './subjects/user'
+import { billingSubject } from './subjects/billing'
+import { inviteSubject } from './subjects/invite'
+import { organizationSubject } from './subjects/organization'
+import { projectSubject } from './subjects/project'
+import { userSubject } from './subjects/user'
 
-// Define união de Abilities para permissão administrativa global
-type AppAbilities = ProjectSubject | UserSubject | ['manage', 'all']
+const appAbilitySchema = z.union([
+  projectSubject,
+  userSubject,
+  organizationSubject,
+  inviteSubject,
+  billingSubject,
+  z.tuple([z.literal('manage'), z.literal('all')]),
+])
+
+type AppAbilities = z.infer<typeof appAbilitySchema>
 
 export type AppAbility = MongoAbility<AppAbilities>
 export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>
